@@ -9,6 +9,10 @@ btree::~btree() {
     delete this->root;
 }
 
+void btree::bt_split_root() {
+    this->root = this->root->self_split();
+}
+
 int btree::bt_search(int key) {
     std::cout << "search" << std::endl;
     return 1;

@@ -6,6 +6,8 @@ class btree {
     int t; //degree
     btree_node *root;
 
+    void bt_split_root();
+
     public:
     btree(int t);
     ~btree();

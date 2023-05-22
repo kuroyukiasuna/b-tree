@@ -18,6 +18,9 @@ class btree_node {
 
     //b-tree functionalities
     void child_split(int n);
+    btree_node* self_split(); //split this*, should only get called if this* is root. 
+                              // This is a replacement of the upper level split_root function, created in here
+                              // for the sake of encapsulation.
 
     //dist utilities
     virtual void disk_write();

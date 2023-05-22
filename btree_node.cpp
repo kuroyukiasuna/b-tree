@@ -55,6 +55,14 @@ void btree_node::child_split(int n) {
     new_node = nullptr;
 }
 
+btree_node* btree_node::self_split() {
+    btree_node* tmp_root = new btree_node(t);
+    tmp_root->leaf = false;
+    tmp_root->children[0] = this;
+    tmp_root->child_split(0);
+    return tmp_root;
+}
+
 void btree_node::disk_write() {
     std::cout << "writing to disk" << std::endl;
 }
@@ -106,4 +114,5 @@ void btree_node::generate_random_full_node() {
     this->children[2]->insert_keys(3);
     this->children[3]->insert_keys(3);
     this->children[4]->insert_keys(2);
+    this->children[5]->insert_keys(3);
 }
