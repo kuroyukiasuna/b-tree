@@ -11,11 +11,21 @@ class btree_node {
     //TODO: implement node level locking so this is thread safe
 
     public:
+
+    //ctor & dtor
     btree_node(int t);
     virtual ~btree_node();
 
-    virtual void disk_write();
+    //b-tree functionalities
+    void child_split(int n);
 
+    //dist utilities
+    virtual void disk_write();
+    virtual void disk_read();
+
+    //helpers
     void print_btree_node();
+    void generate_random_full_node();
+    void insert_keys(int count);
 };
 #endif

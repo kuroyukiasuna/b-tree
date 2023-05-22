@@ -5,9 +5,15 @@
 using namespace std;
 
 int main(int argc, char* argv[]) {
-    btree* a = new btree(2);
-    a->bt_insert(3);
-    a->bt_print();
-    delete a;
+    btree_node* a = new btree_node(3);
+    a->insert_keys(4);
+    a->print_btree_node();
+    cout << endl << "////////////////////////////////" << endl << endl;
+    a->generate_random_full_node();
+    a->print_btree_node();
+    cout << endl << "////////////////////////////////" << endl << endl;
+    a->child_split(0);
+    a->print_btree_node();
+
     return 1;
 }
