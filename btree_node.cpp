@@ -63,6 +63,41 @@ btree_node* btree_node::self_split() {
     return tmp_root;
 }
 
+void btree_node::insert_non_full(int key) {
+
+    // TODO: hash? allow risky insert?
+    for(int j = 0; j < this->size; j++) {
+        if(this->k[j] == key) {
+            throw std::runtime_error("key already exists");
+        }
+    }
+
+    int i = this->size - 1;
+
+    if(this->leaf) {
+        while(i >= 0 && key < this->k[i]) {
+            this->k[i + 1] = this->k[i];
+            i--;
+        }
+        this->k[i + 1] = key;
+        this->size++;
+        //disk-write
+    } else {
+        while(i >= 0 && key < this->k[i]) {
+            i--;
+        }
+        i++;
+        //disk-read
+        if(this->children[i]->size == 2 * t - 1) {
+            this->child_split(i);
+            if(key > this->k[i]) {
+                i++;
+            }
+        }
+        this->children[i]->insert_non_full(key);
+    }
+}
+
 void btree_node::disk_write() {
     std::cout << "writing to disk" << std::endl;
 }

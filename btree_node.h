@@ -12,21 +12,23 @@ class btree_node {
 
     public:
 
-    //ctor & dtor
+    /** ctor & dtor **/
     btree_node(int t);
     virtual ~btree_node();
 
-    //b-tree functionalities
+    /** b-tree functionalities **/
     void child_split(int n);
     btree_node* self_split(); //split this*, should only get called if this* is root. 
                               // This is a replacement of the upper level split_root function, created in here
                               // for the sake of encapsulation.
+    
+    void insert_non_full(int key); //recursive insertion, split child if full
 
-    //dist utilities
+    /** dist utilities **/
     virtual void disk_write();
     virtual void disk_read();
 
-    //helpers
+    /** helpers **/
     void print_btree_node();
     void generate_random_full_node();
     void insert_keys(int count);
