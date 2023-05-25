@@ -20,6 +20,10 @@ btree_node::~btree_node() {
     delete [] children;
 }
 
+bool btree_node::is_full() {
+    return this->size == 2 * this->t - 1;
+}
+
 void btree_node::child_split(int n) {
     //Create a new tree node
     btree_node *new_node = new btree_node(t);

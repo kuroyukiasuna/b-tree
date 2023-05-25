@@ -16,6 +16,9 @@ class btree_node {
     btree_node(int t);
     virtual ~btree_node();
 
+    /** getters & setters */
+    bool is_full();
+
     /** b-tree functionalities **/
     void child_split(int n);
     btree_node* self_split(); //split this*, should only get called if this* is root. 

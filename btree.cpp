@@ -19,7 +19,9 @@ int btree::bt_search(int key) {
 }
 
 void btree::bt_insert(int key) {
-    std::cout << "insert" << std::endl;
+    if(root->is_full())
+        bt_split_root();
+    root->insert_non_full(key);
 }
 
 void btree::bt_delete(int key) {
