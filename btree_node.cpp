@@ -102,6 +102,50 @@ void btree_node::insert_non_full(int key) {
     }
 }
 
+void btree_node::child_merge(int n) {
+    if(this->leaf)
+        throw std::runtime_error("merge should not execute on leaf node");
+
+    btree_node* l = this->children[n];
+    btree_node* r = this->children[n + 1];
+
+    if(!l || !r)
+        throw std::runtime_error("subnodes pending merge need to be not null");
+
+    if(l->size != t - 1 || r->size != t - 1)
+        throw std::runtime_error("subnodes needs to have " + std::to_string(t - 1) + " nodes to be merge-able");
+
+    l->k[t - 1] = this->k[n];
+
+    //until 2t - 2
+    for(int i = 0; i < t - 1; i++) {
+        l->k[i + t] = r->k[i];
+    }
+
+    if(!l->leaf) {
+        //until 2t - 1
+        for(int i = 0; i < t; i++) {
+            l->children[i + t] = r->children[i];
+            r->children[i] = nullptr;
+        }
+    }
+
+    l->size = 2*t - 1;
+
+    for(int i = n; i < this->size - 1; i++) {
+        this->k[i] = this->k[i + 1];
+    }
+
+    for(int i = n + 1; i < this->size; i++) {
+        this->children[i] = this->children[i + 1];
+    }
+    this->children[this->size] = nullptr;
+    this->size--;
+
+    l = nullptr;
+    delete r;
+}
+
 void btree_node::disk_write() {
     std::cout << "writing to disk" << std::endl;
 }

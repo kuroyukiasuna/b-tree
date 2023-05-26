@@ -26,6 +26,7 @@ class btree_node {
                               // for the sake of encapsulation.
     
     void insert_non_full(int key); //recursive insertion, split child if full
+    void child_merge(int n); //merge children on left and right
 
     /** dist utilities **/
     virtual void disk_write();
