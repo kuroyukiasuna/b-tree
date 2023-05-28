@@ -7,6 +7,7 @@ class btree {
     btree_node *root;
 
     void bt_split_root();
+    void bt_relocate_root();
 
     public:
     btree(int t);

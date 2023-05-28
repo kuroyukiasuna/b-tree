@@ -349,23 +349,3 @@ void btree_node::print_btree_node() {
         std::cout << std::endl;
     }
 }
-
-void btree_node::insert_keys(int count) {
-    this->size = count;
-
-    for(int i = 0; i < count; i++) {
-        this->k[i] = i + 1;
-        this->children[i] = new btree_node(t);
-    }
-    this->children[count] = new btree_node(t);
-}
-
-void btree_node::generate_random_full_node() {
-    this->leaf = false;
-    this->children[0]->insert_keys(5);
-    this->children[1]->insert_keys(2);
-    this->children[2]->insert_keys(3);
-    this->children[3]->insert_keys(3);
-    this->children[4]->insert_keys(2);
-    this->children[5]->insert_keys(3);
-}

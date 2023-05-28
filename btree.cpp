@@ -13,6 +13,17 @@ void btree::bt_split_root() {
     this->root = this->root->self_split();
 }
 
+void btree::bt_relocate_root() {
+    btree_node* tmp = root->relocate_root();
+    delete root;
+    root = tmp;
+    tmp = nullptr;
+
+    if(!root) {
+        root = new btree_node(t);
+    }
+}
+
 int btree::bt_search(int key) {
     return this->root->search(key);
 }
@@ -27,15 +38,8 @@ void btree::bt_insert(int key) {
 void btree::bt_delete(int key) {
     root->delete_non_empty(key);
 
-    if(root->is_empty()) {
-        btree_node* tmp = root->relocate_root();
-        delete root;
-        root = tmp;
-        tmp = nullptr;
-        if(!root) {
-            root = new btree_node(t);
-        }
-    }
+    if(root->is_empty())
+        bt_relocate_root();
 }
 
 void btree::bt_print() {
