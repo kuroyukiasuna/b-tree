@@ -1,8 +1,8 @@
 #ifndef BTREE_NODE_H
 #define BTREE_NODE_H
 
-#include "data_node.h"
-#include "data_node.cpp"
+#include "sn/data_node.h"
+#include "sn/data_node.cpp"
 
 class btree_node {
     int size; //current key store size

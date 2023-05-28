@@ -1,7 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++17 -O3 -Wall -MMD
-EXEC = bt_tree
-OBJECTS = main.o btree_node.o btree.o data_node.o
+SRCDIR = src
+CXXFLAGS = -std=c++17 -O3 -Wall -MMD -I./${SRCDIR}
+EXEC = bt_main
+MAIN_TARGET = main.o
+TREE_TARGETS = btree_node.o btree.o
+SN_TARGETS = data_node.o
+OBJECTS = ${TREE_TARGETS:%=${SRCDIR}/tree/%} ${SN_TARGETS:%=${SRCDIR}/sn/%} ${MAIN_TARGET:%=${SRCDIR}/%}
 DEPENDS = ${OBJECTS:.o=.d}
 
 ${EXEC}: ${OBJECTS}
