@@ -23,7 +23,7 @@ int main(int argc, char* argv[]) {
             int i;
             while(iss >> i) {
                 try {
-                    a->bt_insert(i);
+                    a->bt_insert(i, i);
                 } catch(runtime_error &e) {
                     cout << e.what() << endl;
                     cycle_return_code = 1;

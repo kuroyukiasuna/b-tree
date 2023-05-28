@@ -3,7 +3,7 @@
 #include <queue>
 
 btree_node::btree_node(int t) : size{0}, t{t}, leaf{true} {
-    k = new int [2 * t - 1];
+    k = new data_node<int> [2 * t - 1];
     children = new btree_node* [2*t];
     for(int i = 0; i < 2*t; i++) {
         children[i] = nullptr;
@@ -71,36 +71,36 @@ btree_node* btree_node::self_split() {
     return tmp_root;
 }
 
-void btree_node::insert_non_full(int key) {
+void btree_node::insert_non_full(data_node<int> data) {
 
     // TODO: hash? allow risky insert?
-    if(this->contains_key(key)) {
+    if(this->contains_key(data.get_key())) {
         throw std::runtime_error("key already exists");
     }
 
     int i = this->size - 1;
 
     if(this->leaf) {
-        while(i >= 0 && key < this->k[i]) {
+        while(i >= 0 && data < this->k[i]) {
             this->k[i + 1] = this->k[i];
             i--;
         }
-        this->k[i + 1] = key;
+        this->k[i + 1] = data;
         this->size++;
         //disk-write
     } else {
-        while(i >= 0 && key < this->k[i]) {
+        while(i >= 0 && data < this->k[i]) {
             i--;
         }
         i++;
         //disk-read
         if(this->children[i]->size == 2 * t - 1) {
             this->child_split(i);
-            if(key > this->k[i]) {
+            if(data > this->k[i]) {
                 i++;
             }
         }
-        this->children[i]->insert_non_full(key);
+        this->children[i]->insert_non_full(data);
     }
 }
 
@@ -149,24 +149,24 @@ void btree_node::child_merge(int n) {
 }
 
 void btree_node::delete_level_contains(int n) {
-    int replacement_key;
+    data_node<int> replacement_node;
     btree_node* next = nullptr;
 
     if(this->children[n]->size > t - 1) {
-        replacement_key = this->children[n]->k[this->children[n]->size - 1];
+        replacement_node = this->children[n]->k[this->children[n]->size - 1];
         next = this->children[n];
     } else if(this->children[n + 1]->size > t - 1) {
-        replacement_key = this->children[n + 1]->k[0];
+        replacement_node = this->children[n + 1]->k[0];
         next = this->children[n + 1];
     } else {
-        replacement_key = this->k[n];
+        replacement_node = this->k[n];
         this->child_merge(n);
-        this->children[n]->delete_non_empty(replacement_key);
+        this->children[n]->delete_non_empty(replacement_node.get_key());
         return;
     }
 
-    this->k[n] = replacement_key;
-    next->delete_non_empty(replacement_key);
+    this->k[n] = replacement_node;
+    next->delete_non_empty(replacement_node.get_key());
 }
 
 int btree_node::delete_level_not_contain(int n) {
@@ -261,29 +261,36 @@ void btree_node::delete_non_empty(int key) {
 }
 
 void btree_node::disk_write() {
-    std::cout << "writing to disk" << std::endl;
+    std::cout << "writing to memory block " << this << std::endl;
 }
 
 void btree_node::disk_read() {
-    std::cout << "reading from disk" << std::endl;
+    std::cout << "reading from memory block " << this << std::endl;
 }
 
 bool btree_node::contains_key(int key) {
+    if(this->size == 0)
+        return false;
+
     int cur = find_key_or_child(key);
-    return cur < this->size && this->k[cur] == key;
+    return cur < this->size && key == this->k[cur];
 }
 
 int btree_node::search(int k) {
+    if(this->size == 0)
+        return false;
+
     int cur = find_key_or_child(k);
-    if(cur < this->size && this->k[cur] == k) {
-        return this->k[cur];
+    if(cur < this->size && k == this->k[cur]) {
+        return this->k[cur].get_value();
     } else {
+        this->disk_read();
         return this->leaf ? -1 : this->children[cur]->search(k);
     }
 }
 
 int btree_node::find_key_or_child(int k) {
-    if(k < this->k[0])
+    if(k < this->k[0] || this->size == 0)
         return 0;
 
     if(k > this->k[size - 1])

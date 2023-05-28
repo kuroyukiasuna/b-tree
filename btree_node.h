@@ -1,12 +1,15 @@
 #ifndef BTREE_NODE_H
 #define BTREE_NODE_H
 
+#include "data_node.h"
+#include "data_node.cpp"
+
 class btree_node {
     int size; //current key store size
     int t; //degree
     bool leaf;
-    
-    int *k; //TODO: allow template type key-value store
+
+    data_node<int> *k;
     btree_node **children;
     //TODO: implement node level locking so this is thread safe
 
@@ -40,7 +43,7 @@ class btree_node {
                               // This is a replacement of the upper level split_root function, created in here
                               // for the sake of encapsulation.
 
-    void insert_non_full(int key); //recursive insertion, split child if full
+    void insert_non_full(data_node<int> data); //recursive insertion, split child if full
 
     btree_node* relocate_root();//get root*, should only get called if this* is root.
     void delete_non_empty(int key);
