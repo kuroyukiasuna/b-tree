@@ -11,7 +11,7 @@ class btree_node {
     //TODO: implement node level locking so this is thread safe
 
     //TODO: re-implement using hashset to reduce runtime
-    int find_key(int k); //Useless for now
+    bool contains_key(int k);
     int find_key_or_child(int k);
     int binary_search(int k, int min_val, int max_val);
 

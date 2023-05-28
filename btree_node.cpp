@@ -70,7 +70,7 @@ btree_node* btree_node::self_split() {
 void btree_node::insert_non_full(int key) {
 
     // TODO: hash? allow risky insert?
-    if(find_key(key) != -1) {
+    if(this->contains_key(key)) {
         throw std::runtime_error("key already exists");
     }
 
@@ -152,12 +152,9 @@ void btree_node::disk_read() {
     std::cout << "reading from disk" << std::endl;
 }
 
-int btree_node::find_key(int k) {
-   for(int i = 0; i < this->size; i++) {
-    if(this->k[i] == k)
-        return i;
-   }
-   return -1;
+bool btree_node::contains_key(int k) {
+    int cur = find_key_or_child(k);
+    return cur < this->size && this->k[cur] == k;
 }
 
 int btree_node::search(int k) {
