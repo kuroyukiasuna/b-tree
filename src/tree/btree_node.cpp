@@ -1,3 +1,5 @@
+#define _VERBOSE_LOG_DISK_RW_ false
+
 #include "btree_node.h"
 #include <iostream>
 #include <queue>
@@ -87,13 +89,16 @@ void btree_node::insert_non_full(data_node<int> data) {
         }
         this->k[i + 1] = data;
         this->size++;
-        //disk-write
+        /* write */
+        this->disk_write();
     } else {
         while(i >= 0 && data < this->k[i]) {
             i--;
         }
         i++;
-        //disk-read
+
+        /* read */
+        this->disk_read();
         if(this->children[i]->size == 2 * t - 1) {
             this->child_split(i);
             if(data > this->k[i]) {
@@ -144,6 +149,9 @@ void btree_node::child_merge(int n) {
     this->children[this->size] = nullptr;
     this->size--;
 
+    /* write */
+    this->disk_write();
+
     l = nullptr;
     delete r;
 }
@@ -151,6 +159,9 @@ void btree_node::child_merge(int n) {
 void btree_node::delete_level_contains(int n) {
     data_node<int> replacement_node;
     btree_node* next = nullptr;
+
+    /* read */
+    this->disk_read();
 
     if(this->children[n]->size > t - 1) {
         replacement_node = this->children[n]->k[this->children[n]->size - 1];
@@ -166,10 +177,17 @@ void btree_node::delete_level_contains(int n) {
     }
 
     this->k[n] = replacement_node;
+
+    /* write */
+    this->disk_write();
     next->delete_non_empty(replacement_node.get_key());
 }
 
 int btree_node::delete_level_not_contain(int n) {
+
+    /* read */
+    this->disk_read();
+
     if(n > 0 && this->children[n - 1]->size > t - 1) {
         //Shift from left
         btree_node* cur = this->children[n];
@@ -193,6 +211,8 @@ int btree_node::delete_level_not_contain(int n) {
         l->size--;
         cur = nullptr;
         l = nullptr;
+        /* write */
+        this->disk_write();
     } else if(n < this->size && this->children[n + 1]->size > t - 1) {
         //Shift from right
         btree_node* cur = this->children[n];
@@ -217,6 +237,8 @@ int btree_node::delete_level_not_contain(int n) {
         cur->size++;
         cur = nullptr;
         r = nullptr;
+        /* write */
+        this->disk_write();
     } else {
         //Merge
         if(n == this->size) {
@@ -261,11 +283,15 @@ void btree_node::delete_non_empty(int key) {
 }
 
 void btree_node::disk_write() {
+#if defined(_VERBOSE_LOG_DISK_RW_) && (_VERBOSE_LOG_DISK_RW_ == true)
     std::cout << "writing to memory block " << this << std::endl;
+#endif
 }
 
 void btree_node::disk_read() {
+#if defined(_VERBOSE_LOG_DISK_RW_) && (_VERBOSE_LOG_DISK_RW_ == true)
     std::cout << "reading from memory block " << this << std::endl;
+#endif
 }
 
 bool btree_node::contains_key(int key) {
@@ -284,6 +310,8 @@ int btree_node::search(int k) {
     if(cur < this->size && k == this->k[cur]) {
         return this->k[cur].get_value();
     } else {
+
+        /* read */
         this->disk_read();
         return this->leaf ? -1 : this->children[cur]->search(k);
     }
