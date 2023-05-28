@@ -10,6 +10,11 @@ class btree_node {
     btree_node **children;
     //TODO: implement node level locking so this is thread safe
 
+    //TODO: re-implement using hashset to reduce runtime
+    int find_key(int k); //Useless for now
+    int find_key_or_child(int k);
+    int binary_search(int k, int min_val, int max_val);
+
     public:
 
     /** ctor & dtor **/
@@ -20,6 +25,7 @@ class btree_node {
     bool is_full();
 
     /** b-tree functionalities **/
+    int search(int k);
     void child_split(int n);
     btree_node* self_split(); //split this*, should only get called if this* is root. 
                               // This is a replacement of the upper level split_root function, created in here

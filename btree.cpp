@@ -14,8 +14,7 @@ void btree::bt_split_root() {
 }
 
 int btree::bt_search(int key) {
-    std::cout << "search" << std::endl;
-    return 1;
+    return this->root->search(key);
 }
 
 void btree::bt_insert(int key) {

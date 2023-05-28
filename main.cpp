@@ -30,6 +30,10 @@ int main(int argc, char* argv[]) {
                 }
             }
             a->bt_print();
+        } else if(s_p == "search") {
+            int i;
+            iss >> i;
+            cout << a->bt_search(i) << endl;
         } else if(s_p == "print") {
             a->bt_print();
         } else if(s_p == "exit" || s_p == "\\q" || s_p == "q") {

@@ -70,10 +70,8 @@ btree_node* btree_node::self_split() {
 void btree_node::insert_non_full(int key) {
 
     // TODO: hash? allow risky insert?
-    for(int j = 0; j < this->size; j++) {
-        if(this->k[j] == key) {
-            throw std::runtime_error("key already exists");
-        }
+    if(find_key(key) != -1) {
+        throw std::runtime_error("key already exists");
     }
 
     int i = this->size - 1;
@@ -152,6 +150,65 @@ void btree_node::disk_write() {
 
 void btree_node::disk_read() {
     std::cout << "reading from disk" << std::endl;
+}
+
+int btree_node::find_key(int k) {
+   for(int i = 0; i < this->size; i++) {
+    if(this->k[i] == k)
+        return i;
+   }
+   return -1;
+}
+
+int btree_node::search(int k) {
+    int cur = find_key_or_child(k);
+    if(cur < this->size && this->k[cur] == k) {
+        return this->k[cur];
+    } else {
+        return this->leaf ? -1 : this->children[cur]->search(k);
+    }
+}
+
+int btree_node::find_key_or_child(int k) {
+    if(k < this->k[0])
+        return 0;
+
+    if(k > this->k[size - 1])
+        return this->size;
+        
+    return binary_search(k, 0, this->size - 1);
+}
+
+int btree_node::binary_search(int k, int min_val, int max_val) {
+    if(min_val + 1 == max_val) {
+        if(k == this->k[min_val]) {
+            return min_val;
+        } else if(k == this->k[max_val]) {
+            return max_val;
+        } else if(k > this->k[min_val] && k < this->k[max_val]) {
+            return max_val;
+        } else {
+            throw std::runtime_error("Wrong binary search result");
+        }
+    }
+    
+    int mid = (min_val + max_val) / 2;
+
+    if(k == this->k[mid]) {
+        return mid;
+    } else if(k > this->k[mid]) {
+        if(k < this->k[mid + 1]) {
+            return mid + 1;
+        } else {
+            return binary_search(k, mid, max_val);
+        }
+    } else {
+        if(k > this->k[mid - 1]) {
+            return mid;
+        } else {
+            return binary_search(k, min_val, mid);
+        }
+    }
 }
 
 void btree_node::print_btree_node() {
