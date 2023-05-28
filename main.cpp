@@ -24,7 +24,18 @@ int main(int argc, char* argv[]) {
             while(iss >> i) {
                 try {
                     a->bt_insert(i);
-                } catch(std::runtime_error &e) {
+                } catch(runtime_error &e) {
+                    cout << e.what() << endl;
+                    cycle_return_code = 1;
+                }
+            }
+            a->bt_print();
+        } else if(s_p == "delete") {
+            int i;
+            while(iss >> i) {
+                try{
+                    a->bt_delete(i);
+                } catch(runtime_error &e) {
                     cout << e.what() << endl;
                     cycle_return_code = 1;
                 }

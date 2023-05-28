@@ -16,5 +16,6 @@ class btree {
     void bt_insert(int key);
     void bt_delete(int key);
     void bt_print();
+    int bt_get_degree();
 };
 #endif

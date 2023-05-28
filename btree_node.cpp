@@ -24,6 +24,10 @@ bool btree_node::is_full() {
     return this->size == 2 * this->t - 1;
 }
 
+bool btree_node::is_empty() {
+    return this->size == 0;
+}
+
 void btree_node::child_split(int n) {
     //Create a new tree node
     btree_node *new_node = new btree_node(t);
@@ -144,6 +148,118 @@ void btree_node::child_merge(int n) {
     delete r;
 }
 
+void btree_node::delete_level_contains(int n) {
+    int replacement_key;
+    btree_node* next = nullptr;
+
+    if(this->children[n]->size > t - 1) {
+        replacement_key = this->children[n]->k[this->children[n]->size - 1];
+        next = this->children[n];
+    } else if(this->children[n + 1]->size > t - 1) {
+        replacement_key = this->children[n + 1]->k[0];
+        next = this->children[n + 1];
+    } else {
+        replacement_key = this->k[n];
+        this->child_merge(n);
+        this->children[n]->delete_non_empty(replacement_key);
+        return;
+    }
+
+    this->k[n] = replacement_key;
+    next->delete_non_empty(replacement_key);
+}
+
+int btree_node::delete_level_not_contain(int n) {
+    if(n > 0 && this->children[n - 1]->size > t - 1) {
+        //Shift from left
+        btree_node* cur = this->children[n];
+        btree_node* l = this->children[n - 1];
+
+        for(int i = cur->size; i > 0; i--) {
+            cur->k[i] = cur->k[i - 1];
+        }
+        cur->k[0] = this->k[n - 1];
+
+        if(!l->leaf) {
+            for(int i = cur->size + 1; i > 0; i--) {
+                cur->children[i] = cur->children[i - 1];
+            }
+            cur->children[0] = l->children[l->size];
+            l->children[l->size] = nullptr;
+        }
+        cur->size++;
+
+        this->k[n - 1] = l->k[l->size - 1];
+        l->size--;
+        cur = nullptr;
+        l = nullptr;
+    } else if(n < this->size && this->children[n + 1]->size > t - 1) {
+        //Shift from right
+        btree_node* cur = this->children[n];
+        btree_node* r = this->children[n + 1];
+
+        cur->k[cur->size] = this->k[n];
+        this->k[n] = r->k[0];
+
+        for(int i = 0; i < r->size - 1; i++) {
+            r->k[i] = r->k[i + 1];
+        }
+
+        if(!r->leaf) {
+            cur->children[cur->size + 1] = r->children[0];
+            for(int i = 0; i < r->size; i++) {
+                r->children[i] = r->children[i + 1];
+            }
+            r->children[r->size] = nullptr;
+        }
+
+        r->size--;
+        cur->size++;
+        cur = nullptr;
+        r = nullptr;
+    } else {
+        //Merge
+        if(n == this->size) {
+            this->child_merge(n - 1);
+            return n - 1;
+        } else {
+            this->child_merge(n);
+        }
+    }
+    return n;
+}
+
+btree_node* btree_node::relocate_root() {
+    btree_node* tmp = this->children[0];
+    this->children[0] = nullptr;
+    return tmp;
+}
+
+void btree_node::delete_non_empty(int key) {
+    bool level_contains_key = this->contains_key(key);
+    int n = this->find_key_or_child(key);
+
+    if(this->leaf) {
+        if(level_contains_key) {
+            for(int i = n; i < this->size - 1; i++) {
+                this->k[i] = this->k[i + 1];
+            }
+            this->size--;
+        } else {
+            throw std::runtime_error("Key [" + std::to_string(key) + "] does not exist in the tree");
+        }
+    } else {
+        if(level_contains_key) {
+            this->delete_level_contains(n);
+        } else {
+            if(this->children[n]->size <= t - 1) {
+                n = this->delete_level_not_contain(n);
+            }
+            this->children[n]->delete_non_empty(key);
+        }
+    }
+}
+
 void btree_node::disk_write() {
     std::cout << "writing to disk" << std::endl;
 }
@@ -152,9 +268,9 @@ void btree_node::disk_read() {
     std::cout << "reading from disk" << std::endl;
 }
 
-bool btree_node::contains_key(int k) {
-    int cur = find_key_or_child(k);
-    return cur < this->size && this->k[cur] == k;
+bool btree_node::contains_key(int key) {
+    int cur = find_key_or_child(key);
+    return cur < this->size && this->k[cur] == key;
 }
 
 int btree_node::search(int k) {

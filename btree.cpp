@@ -20,13 +20,28 @@ int btree::bt_search(int key) {
 void btree::bt_insert(int key) {
     if(root->is_full())
         bt_split_root();
+
     root->insert_non_full(key);
 }
 
 void btree::bt_delete(int key) {
-    std::cout << "delete" << std::endl;
+    root->delete_non_empty(key);
+
+    if(root->is_empty()) {
+        btree_node* tmp = root->relocate_root();
+        delete root;
+        root = tmp;
+        tmp = nullptr;
+        if(!root) {
+            root = new btree_node(t);
+        }
+    }
 }
 
 void btree::bt_print() {
     this->root->print_btree_node();
+}
+
+int btree::bt_get_degree() {
+    return this->t;
 }
