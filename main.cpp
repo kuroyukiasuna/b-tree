@@ -10,7 +10,7 @@ int main(int argc, char* argv[]) {
     int prev_return_code = 0;
 
     while(true) {
-        cout << "btree cli <" + to_string(prev_return_code) + ">: ";
+        cout << "btree cli <" << prev_return_code << ">: ";
         string s; //cur
         string s_p; //parsed
         int cycle_return_code = 0;
@@ -52,7 +52,9 @@ int main(int argc, char* argv[]) {
         }
         else {
             cout << "Supported Commands:" << endl;
+            cout << "search - find a key in btree" << endl;
             cout << "insert - inert a key into btree" << endl;
+            cout << "delete - delete a key from btree" << endl;
             cout << "print - print the btree" << endl;
             cout << "help - show this manual" << endl;
             cout << "exit or q - exit" << endl;
