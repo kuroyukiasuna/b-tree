@@ -10,6 +10,7 @@ btree_node::btree_node(int t) : size{0}, t{t}, leaf{true} {
     for(int i = 0; i < 2*t; i++) {
         children[i] = nullptr;
     }
+    lock = rw_lock();
 }
 
 btree_node::~btree_node() {

@@ -5,7 +5,12 @@ EXEC = bt_main
 MAIN_TARGET = main.o
 TREE_TARGETS = btree_node.o btree.o
 SN_TARGETS = data_node.o
-OBJECTS = ${TREE_TARGETS:%=${SRCDIR}/tree/%} ${SN_TARGETS:%=${SRCDIR}/sn/%} ${MAIN_TARGET:%=${SRCDIR}/%}
+LOCK_TARGETS = rw_lock.o
+OBJECTS = ${TREE_TARGETS:%=${SRCDIR}/tree/%} \
+		  ${SN_TARGETS:%=${SRCDIR}/sn/%} \
+		  ${LOCK_TARGETS:%=${SRCDIR}/lock/%} \
+		  ${MAIN_TARGET:%=${SRCDIR}/%} \
+
 DEPENDS = ${OBJECTS:.o=.d}
 
 ${EXEC}: ${OBJECTS}

@@ -1,5 +1,5 @@
-#ifndef DATA_NODE_H
-#define DATA_NODE_H
+#ifndef _DATA_NODE_H
+#define _DATA_NODE_H
 
 #include <ostream>
 

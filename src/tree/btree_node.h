@@ -1,8 +1,9 @@
-#ifndef BTREE_NODE_H
-#define BTREE_NODE_H
+#ifndef _BTREE_NODE_H
+#define _BTREE_NODE_H
 
 #include "sn/data_node.h"
 #include "sn/data_node.cpp"
+#include "lock/rw_lock.h"
 
 class btree_node {
     int size; //current key store size
@@ -11,7 +12,8 @@ class btree_node {
 
     data_node<int> *k;
     btree_node **children;
-    //TODO: implement node level locking so this is thread safe
+    
+    rw_lock lock;
 
     //TODO: re-implement using hashset to reduce runtime
     bool contains_key(int k);
