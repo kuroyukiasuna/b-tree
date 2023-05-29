@@ -1,3 +1,6 @@
+#define _READ_ISOLATION_LEVEL_ snapshot
+#define _WRITE_ISOLATION_LEVEL_ serialized
+
 #include "btree.h"
 #include "sn/data_node.h"
 
@@ -27,18 +30,35 @@ void btree::bt_relocate_root() {
 }
 
 int btree::bt_search(int key) {
-    return this->root->search(key);
+    bool serialized_read = true;
+    
+#if defined(_READ_ISOLATION_LEVEL_) && (_READ_ISOLATION_LEVEL_ == snapshot)
+    serialized_read = false;
+#endif
+
+    return this->root->search(key, serialized_read);
 }
 
 void btree::bt_insert(int key, int value) {
     if(root->is_full())
         bt_split_root();
 
-    root->insert_non_full(data_node<int>(key, value));
+    bool serialized_write = true;
+    
+#if defined(_WRITE_ISOLATION_LEVEL_) && (_WRITE_ISOLATION_LEVEL_ == optimistic)
+    serialized_write = false;
+#endif
+    root->insert_non_full(data_node<int>(key, value), serialized_write);
 }
 
 void btree::bt_delete(int key) {
-    root->delete_non_empty(key);
+    bool serialized_write = true;
+    
+#if defined(_WRITE_ISOLATION_LEVEL_) && (_WRITE_ISOLATION_LEVEL_ == optimistic)
+    serialized_write = false;
+#endif
+
+    root->delete_non_empty(key, serialized_write);
 
     if(root->is_empty())
         bt_relocate_root();

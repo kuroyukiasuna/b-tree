@@ -1,6 +1,6 @@
 #include "rw_lock.h"
 
-rw_lock::rw_lock() : read{true}, write{false} {}
+rw_lock::rw_lock() : read{false}, write{false} {}
 
 void rw_lock::acquire_read() {
     while(this->read);

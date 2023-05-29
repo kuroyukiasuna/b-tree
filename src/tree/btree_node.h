@@ -29,6 +29,12 @@ class btree_node {
     int delete_level_not_contain(int n); //delete key from child, given it does not exist on this level
                                          //returns n because n may move during the process
 
+    /** private functions for locking **/
+    void lock_for_write(bool serialized);
+    void lock_for_read(bool serialized);
+    void unlock_for_write(bool serialized);
+    void unlock_for_read(bool serialized);
+
     public:
     
     /** ctor & dtor **/
@@ -40,15 +46,15 @@ class btree_node {
     bool is_empty();
 
     /** b-tree functionalities **/
-    int search(int key);
+    int search(int key, bool serialized = true);
     btree_node* self_split(); //split this*, should only get called if this* is root. 
                               // This is a replacement of the upper level split_root function, created in here
                               // for the sake of encapsulation.
 
-    void insert_non_full(data_node<int> data); //recursive insertion, split child if full
+    void insert_non_full(data_node<int> data, bool serialized = true); //recursive insertion, split child if full
 
     btree_node* relocate_root();//get root*, should only get called if this* is root.
-    void delete_non_empty(int key);
+    void delete_non_empty(int key, bool serialized = true);
 
     /** dist utilities **/
     virtual void disk_write();

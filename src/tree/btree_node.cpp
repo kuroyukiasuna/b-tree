@@ -74,10 +74,12 @@ btree_node* btree_node::self_split() {
     return tmp_root;
 }
 
-void btree_node::insert_non_full(data_node<int> data) {
+void btree_node::insert_non_full(data_node<int> data, bool serialized) {
+    this->lock_for_write(serialized);
 
     // TODO: hash? allow risky insert?
     if(this->contains_key(data.get_key())) {
+        this->unlock_for_write(serialized);
         throw std::runtime_error("key already exists");
     }
 
@@ -106,8 +108,15 @@ void btree_node::insert_non_full(data_node<int> data) {
                 i++;
             }
         }
-        this->children[i]->insert_non_full(data);
+        try {
+            this->children[i]->insert_non_full(data);
+        } catch(std::runtime_error e) {
+            this->unlock_for_write(serialized);
+            throw e;
+        }
     }
+
+    this->unlock_for_write(serialized);
 }
 
 void btree_node::child_merge(int n) {
@@ -258,29 +267,46 @@ btree_node* btree_node::relocate_root() {
     return tmp;
 }
 
-void btree_node::delete_non_empty(int key) {
-    bool level_contains_key = this->contains_key(key);
-    int n = this->find_key_or_child(key);
+void btree_node::delete_non_empty(int key, bool serialized) {
+    /**
+     * This write lock here is not optimal, as it only locks this level,
+     * while it doesn't prevent changes to the next level.
+     *
+     * With that being said this simple mutex lock is a best-effort solution.
+     * Proper locking mechanism needs to be achieved by designing & implementing
+     * better isolation levels.
+     *
+     */
+    this->lock_for_write(serialized);
 
-    if(this->leaf) {
-        if(level_contains_key) {
-            for(int i = n; i < this->size - 1; i++) {
-                this->k[i] = this->k[i + 1];
+    try {
+        bool level_contains_key = this->contains_key(key);
+        int n = this->find_key_or_child(key);
+
+        if(this->leaf) {
+            if(level_contains_key) {
+                for(int i = n; i < this->size - 1; i++) {
+                    this->k[i] = this->k[i + 1];
+                }
+                this->size--;
+            } else {
+                throw std::runtime_error("Key [" + std::to_string(key) + "] does not exist in the tree");
             }
-            this->size--;
         } else {
-            throw std::runtime_error("Key [" + std::to_string(key) + "] does not exist in the tree");
-        }
-    } else {
-        if(level_contains_key) {
-            this->delete_level_contains(n);
-        } else {
-            if(this->children[n]->size <= t - 1) {
-                n = this->delete_level_not_contain(n);
+            if(level_contains_key) {
+                this->delete_level_contains(n);
+            } else {
+                if(this->children[n]->size <= t - 1) {
+                    n = this->delete_level_not_contain(n);
+                }
+                this->children[n]->delete_non_empty(key);
             }
-            this->children[n]->delete_non_empty(key);
         }
+    } catch(std::runtime_error e) {
+        this->unlock_for_write(serialized);
+        throw e;
     }
+    this->unlock_for_write(serialized);
 }
 
 void btree_node::disk_write() {
@@ -303,7 +329,7 @@ bool btree_node::contains_key(int key) {
     return cur < this->size && key == this->k[cur];
 }
 
-int btree_node::search(int k) {
+int btree_node::search(int k, bool serialized) {
     if(this->size == 0)
         return false;
 
@@ -357,6 +383,32 @@ int btree_node::binary_search(int k, int min_val, int max_val) {
         } else {
             return binary_search(k, min_val, mid);
         }
+    }
+}
+
+void btree_node::lock_for_write(bool serialized) {
+    this->lock.acquire_write();
+    if(serialized) {
+        this->lock.acquire_read();
+    }
+}
+
+void btree_node::unlock_for_write(bool serialized) {
+    this->lock.unlock_write();
+    if(serialized) {
+        this->lock.unlock_read();
+    }
+}
+
+void btree_node::lock_for_read(bool serialized) {
+    if(serialized) {
+        this->lock.acquire_read();
+    }
+}
+
+void btree_node::unlock_for_read(bool serialized) {
+    if(serialized) {
+        this->lock.unlock_read();
     }
 }
 
