@@ -57,7 +57,7 @@ R/W modes can be changed in ```btree.cpp```
 ```
 
 ### Logical replication (NEW!)
-You can host btrees with ```replication_worker``` to stream changes from a publisher tree to one or more subscriber trees. The CDC stream is based on WAL files.
+You can host btrees with ```replication_worker``` to stream changes from a publisher tree to one or more subscriber trees. The CDC stream is based on WAL files, which makes all subscribers crash resilient.
 
 Example:
 ```
