@@ -56,7 +56,38 @@ R/W modes can be changed in ```btree.cpp```
 #define _WRITE_ISOLATION_LEVEL_ serialized
 ```
 
+### Logical replication (NEW!)
+You can host btrees with ```replication_worker``` to stream changes from a publisher tree to one or more subscriber trees. The CDC stream is based on WAL files.
+
+Example:
+```
+./bt_main --wal <path_to_wal_directory>
+
+//inside the program configure, for publisher:
+
+btree cli <0>: publish 1 //1 is the wal channel
+
+//or for subscriber:
+
+btree cli <0>: replicate 1 //1 is the wal channel
+```
+
+We also provide the feature of allowing customized in/out streams, you can use it to set up cross machine replication using ssh tunnels, etc.
+
+Simply create your custom worker class that inherits ```replication_worker```, overriding the i/o stream getters:
+```
+class my_worker : replication_worker {
+    public:
+    std::ifstream get_in_stream() override {
+        ...
+    }
+
+    std::ofstream get_out_stream() override {
+        ...
+    }
+}
+```
+
 ### Upcoming features
-- Logical replication between trees
 - Transaction support
 - Isolation level
