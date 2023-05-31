@@ -5,6 +5,7 @@
 
 #include <string>
 #include <thread>
+#include <fstream>
 
 class replication_worker {
     bool is_publisher;
@@ -28,7 +29,7 @@ class replication_worker {
 
     /** ctor & dtor **/
     replication_worker(bool is_publisher, int replication_code, std::string replication_path, btree* bt);
-    ~replication_worker();
+    virtual ~replication_worker();
 
     /** getters & setters **/
     bool get_is_publisher();
@@ -42,5 +43,9 @@ class replication_worker {
     /** replication **/
     void start_replication();
     void stop_replication();
+
+    /** wal streaming **/
+    virtual std::ifstream get_in_stream();
+    virtual std::ofstream get_out_stream();
 };
 #endif

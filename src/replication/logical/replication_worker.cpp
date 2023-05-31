@@ -5,7 +5,6 @@
 
 #include <iostream>
 #include <unistd.h>
-#include <fstream>
 #include <sstream>
 
 replication_worker::replication_worker(bool is_publisher, int replication_code, std::string replication_path, btree* bt) :
@@ -61,7 +60,7 @@ void replication_worker::replicate() {
         this->replication_status = "CATCHING UP";
         std::string wal;
 
-        std::ifstream file(this->replication_path + "wal_" + std::to_string(this->replication_code));
+        std::ifstream file = this->get_in_stream();
         while(std::getline(file, wal)) {
             int i, k, v;
             char c;
@@ -102,8 +101,7 @@ void replication_worker::publish() {
     while(this->replicating) {
         this->replication_status = "PUBLISHING";
 
-        std::ofstream file;
-        file.open(this->replication_path + "wal_" + std::to_string(this->replication_code), std::ios_base::app);
+        std::ofstream file = this->get_out_stream();
 
         if(file.is_open()) {
             while(this->bt && this->bt->next_wal()) {
@@ -127,6 +125,14 @@ void replication_worker::stop_replication() {
 
     //delay exit
     this->sleep_for_delay();
+}
+
+std::ifstream replication_worker::get_in_stream() {
+    return std::ifstream(this->replication_path + "wal_" + std::to_string(this->replication_code));
+}
+
+std::ofstream replication_worker::get_out_stream() {
+    return std::ofstream(this->replication_path + "wal_" + std::to_string(this->replication_code), std::ios_base::app);
 }
 
 void replication_worker::sleep_for_delay() {
