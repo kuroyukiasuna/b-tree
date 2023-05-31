@@ -49,6 +49,7 @@ void btree::bt_insert(int key, int value) {
     serialized_write = false;
 #endif
     root->insert_non_full(data_node<int>(key, value), serialized_write);
+    this->in_memory_wal.emplace("i " + std::to_string(key) + " " + std::to_string(value));
 }
 
 void btree::bt_delete(int key) {
@@ -62,6 +63,8 @@ void btree::bt_delete(int key) {
 
     if(root->is_empty())
         bt_relocate_root();
+
+    this->in_memory_wal.emplace("d " + std::to_string(key));
 }
 
 void btree::bt_print() {
@@ -70,4 +73,14 @@ void btree::bt_print() {
 
 int btree::bt_get_degree() {
     return this->t;
+}
+
+std::string btree::get_next_wal() {
+    std::string ret = this->in_memory_wal.front();
+    this->in_memory_wal.pop();
+    return ret;
+}
+
+bool btree::next_wal() {
+    return !this->in_memory_wal.empty();
 }

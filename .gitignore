@@ -2,3 +2,4 @@
 **/*.o
 **/*.d
 bt_main
+wal_dir/*
