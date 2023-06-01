@@ -91,3 +91,5 @@ class my_worker : replication_worker {
 ### Upcoming features
 - Transaction support
 - Isolation level
+- Continuous backup
+- Snapshot & wal progression
