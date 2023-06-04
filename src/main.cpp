@@ -15,6 +15,10 @@ int main(int argc, char* argv[]) {
     if(argc == 3) {
         if(strcmp( argv[1], "--wal") == 0) {
             wal_dir = argv[2];
+            
+            if(wal_dir[wal_dir.length() - 1] != '/') {
+                wal_dir += '/';
+            }
         }
     }
 
@@ -69,7 +73,6 @@ int main(int argc, char* argv[]) {
             wk->start_replication();
             cout << "Started replicating with WAL" << endl;
         } else if(s_p == "exit" || s_p == "\\q" || s_p == "q") {
-            wk->stop_replication();
             break;
         }
         else {
@@ -78,13 +81,19 @@ int main(int argc, char* argv[]) {
             cout << "insert - inert a key into btree" << endl;
             cout << "delete - delete a key from btree" << endl;
             cout << "print - print the btree" << endl;
+            cout << "publish <wal sequence id> - start replication as publisher" << endl;
+            cout << "replicate <wal sequence id> - start replication as subscriber" << endl;
             cout << "help - show this manual" << endl;
             cout << "exit or q - exit" << endl;
         }
         prev_return_code = cycle_return_code;
     }
 
-    delete wk;
+    if(wk) {
+        wk->stop_replication();
+        delete wk;
+    }
+
     delete a;
     return 1;
 }
